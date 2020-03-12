@@ -10,35 +10,15 @@ pipeline {
 
     stages {
 
-        stage("Initialize") {
-            steps {
-                withCredentials([
-                        string(credentialsId: 'BETA_SECRET_KEY', variable: 'SECRET_KEY'),
-                        string(credentialsId: 'PROD_SECRET_KEY', variable: 'SECRET_KEY')
-                ]) {
-                }
-
-            }
-            post {
-                failure {
-                    echo "Check Credentials Failure, Please Check Credentials Config!"
-
-                }
-                success {
-                    echo "Check Credentials Success!"
-                }
-            }
-        }
-
         stage('Build Develop APK') {
 
             when {
                 branch 'master'
             }
             steps {
-                withCredentials([string(credentialsId: 'BETA_SECRET_KEY', variable: 'SECRET_KEY')]) {
-                    sh './gradlew clean assembleDevDebug'
-                }
+               
+                    sh './gradlew clean assembleRelease'
+                
             }
             post {
                 failure {
@@ -55,9 +35,9 @@ pipeline {
                 branch 'beta'
             }
             steps {
-                withCredentials([string(credentialsId: 'BETA_SECRET_KEY', variable: 'SECRET_KEY')]) {
-                    sh './gradlew clean assembleBetaDebug'
-                }
+                
+                    sh './gradlew clean assembleRelease'
+                
             }
             post {
                 failure {
@@ -74,22 +54,16 @@ pipeline {
                 branch 'prod'
             }
             steps {
-                withCredentials([string(credentialsId: 'PROD_SECRET_KEY', variable: 'SECRET_KEY')]) {
-                    sh './gradlew clean assembleProd'
-                }
+               
+                    sh './gradlew clean assembleRelease'
+                
             }
             post {
                 failure {
                     echo "Build Prod APK Failure!"
                 }
                 success {
-                    signAndroidApks(
-                            keyStoreId: "ANDROID_SIGN_KEY_STORE",
-                            keyAlias: "tomczhen",
-                            apksToSign: "**/*-prod-release-unsigned.apk",
-                            archiveSignedApks: false,
-                            archiveUnsignedApks: false
-                    )
+                    echo "Build Prod APK success!"
                 }
             }
         }
